@@ -1,6 +1,6 @@
 import Express from "express";
 import { provide } from "inversify-binding-decorators";
-import { inject } from "inversify";
+import { id, inject } from "inversify";
 import { Route } from "./Route";
 import { AuthController } from "@controllers/AuthController";
 import passport from "passport";
@@ -35,7 +35,11 @@ export class AuthRoute implements Route {
          *         description: Login failed. Invalid username/email or password
          */
         app.post("/auth/login", (req, res) => {
-            this.authController.login(req, res);
+            try {
+                this.authController.login(req, res);
+            } catch (error) {
+                res.status(error.statusCode).json({error})
+            }
         });
 
         /**
@@ -60,8 +64,12 @@ export class AuthRoute implements Route {
          *       401:
          *         $ref: "#/responses/Unauthorized"
          */
-        app.get("/auth/me", passport.authenticate("jwt", {session: false}), (req, res) => {
-            this.authController.me(req, res);
+        app.post("/auth/me", passport.authenticate("jwt", {session: false}), (req, res) => {
+            try {
+                this.authController.me(req, res);
+            } catch (error) {
+                res.status(error.statusCode).json({error})
+            }
         });
     }
 

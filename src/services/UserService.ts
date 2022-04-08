@@ -5,7 +5,6 @@ import { FilterQuery, PaginateOptions, PaginateResult, UpdateQuery } from "mongo
 import { QueryOptions } from "@utils/pagination";
 import { unmanaged } from "inversify";
 import httpErrors from "http-errors";
-import {formatMongoError} from "@utils/handleMongoError";
 
 @provide(UserService)
 export class UserService {
@@ -13,11 +12,7 @@ export class UserService {
     constructor(@unmanaged() private userModel = UserModel) {}
 
     public async save(user: User): Promise<UserDocument> {
-        try {
-            return await this.userModel.create(user);
-        } catch (err) {
-            throw formatMongoError(err);
-        }
+        return await this.userModel.create(user);
     }
 
     public async findById(id: string, options?: QueryOptions): Promise<UserDocument> {
