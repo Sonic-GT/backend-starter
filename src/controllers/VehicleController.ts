@@ -47,6 +47,7 @@ export class VehicleController {
             } else if (richiesta.page === undefined) {
                 richiesta.page = "1";
             }
+            richiesta.sort = {"isVisible": -1}; // Ordine decrescente true > false
 
             const pagination = extractPaginateOptions(richiesta);
 
@@ -59,6 +60,16 @@ export class VehicleController {
                 //console.log(obj.isVisible === true && obj.user_id === await this.authController.obtain_id(req, res)).id_utente;
                 return (obj.isVisible === true && (obj.user_id === user_id || is_admin))
             });
+            
+            const richestaNext = {"page": pagination.page + 1, "limit": pagination.limit, "sort": {"isVisible": -1}}
+            const paginationNext = extractPaginateOptions(richestaNext)
+            const resultNext = await this.vehicleService.paginate(richestaNext, paginationNext);  //req.body.query == undefined
+            
+            resultNext.docs = resultNext.docs.filter(( obj ) => {
+                return (obj.isVisible === true && (obj.user_id === user_id || is_admin))
+            });
+
+            if (resultNext.docs.length === 0) { result.isEmpty = true } else { result.isEmpty = false };
 
             return res.status(200).send(result);
         } catch (error) {
@@ -75,8 +86,8 @@ export class VehicleController {
             } else if (richiesta.page === undefined) {
                 richiesta.page = "1";
             }
+            richiesta.sort = {"isVisible": 1}; // Ordine crescente false < true
             
-            //await this.authService.adminOnly(req);
             const pagination = extractPaginateOptions(richiesta);
 
             const result = await this.vehicleService.paginate(richiesta.query, pagination);  //req.body.query == undefined
@@ -86,6 +97,16 @@ export class VehicleController {
             result.docs = result.docs.filter(( obj ) => {
                 return (obj.isVisible === false && (obj.user_id === user_id || is_admin))
             });
+
+            const richestaNext = {"page": pagination.page + 1, "limit": pagination.limit, "sort": {"isVisible": 1}}
+            const paginationNext = extractPaginateOptions(richestaNext)
+            const resultNext = await this.vehicleService.paginate(richestaNext, paginationNext);  //req.body.query == undefined
+            
+            resultNext.docs = resultNext.docs.filter(( obj ) => {
+                return (obj.isVisible === false && (obj.user_id === user_id || is_admin))
+            });
+
+            if (resultNext.docs.length === 0) { result.isEmpty = true } else { result.isEmpty = false };
 
             return res.status(200).send(result);
         } catch (error) {
